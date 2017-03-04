@@ -23,6 +23,64 @@ var TodosComponent = (function () {
             _this.todos = todos;
         });
     };
+    TodosComponent.prototype.addTodo = function (event, todoText) {
+        var _this = this;
+        var result;
+        var newTodo = {
+            text: todoText.value,
+            isCompleted: false
+        };
+        result = this._todoService.saveTodo(newTodo);
+        result.subscribe(function (x) {
+            _this.todos.push(newTodo);
+            todoText.value = '';
+        });
+    };
+    TodosComponent.prototype.setEditStatus = function (todo, state) {
+        if (state) {
+            todo.isEditMode = state;
+        }
+        else {
+            delete todo.isEditMode;
+        }
+    };
+    TodosComponent.prototype.updateStatus = function (todo) {
+        var _todo = {
+            _id: todo._id,
+            text: todo.text,
+            isCompleted: !todo.isCompleted
+        };
+        this._todoService.updateTodo(_todo).subscribe(function (data) {
+            todo.isCompleted = !todo.isCompleted;
+        });
+    };
+    TodosComponent.prototype.updateTodoText = function (event, todo) {
+        var _this = this;
+        // keypress 'enter'
+        if (event.which === 13) {
+            todo.text = event.target.value;
+            var _todo = {
+                _id: todo._id,
+                text: todo.text,
+                isCompleted: todo.isCompleted
+            };
+            this._todoService.updateTodo(_todo).subscribe(function (data) {
+                _this.setEditStatus(todo, false);
+            });
+        }
+    };
+    TodosComponent.prototype.deleteTodo = function (todo) {
+        var todos = this.todos;
+        this._todoService.deleteTodo(todo._id).subscribe(function (data) {
+            if (data.n == 1) {
+                for (var i = 0; i < todos.length; i++) {
+                    if (todos[i]._id == todo._id) {
+                        todos.splice(1, 1);
+                    }
+                }
+            }
+        });
+    };
     return TodosComponent;
 }());
 TodosComponent = __decorate([
